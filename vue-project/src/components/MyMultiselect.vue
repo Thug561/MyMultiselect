@@ -1,70 +1,32 @@
 <template>
-    <div class="background-card"
-         tabindex="-1"
-         ref="parent"
-         @blur="focused = false"
-    >
+    <div class="background-card" tabindex="-1" ref="parent" @blur="focused = false">
         <h1>Chips</h1>
         <h4>Use chips prop to make selected option as chip.</h4>
-    <div
-        class="my-multiselect"
-        :style="{ width: width }"
-        @click="handleClick"
-        tabindex="-1"
-        ref="parent"
-        @blur="focused = false"
-    >
-        <div class="input-with-arrow">
-            <span class="arrow" @click="rotateArrow">
-              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" tag="i" class="v-icon notranslate v-theme--light v-icon--size-default iconify iconify--mdi" width="1em" height="1em" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="m7 10l5 5l5-5H7Z"></path>
-              </svg>
-            </span>
-        </div>
+        <div class="my-multiselect" :style="{ width: width }" @click="handleClick" tabindex="-1" ref="parent" @blur="focused = false">
+            <div class="input-with-arrow">
+        <span class="arrow" @click="rotateArrow">
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" tag="i" class="v-icon notranslate v-theme--light v-icon--size-default iconify iconify--mdi" width="1em" height="1em" viewBox="0 0 24 24">
+            <path fill="currentColor" d="m7 10l5 5l5-5H7Z"></path>
+          </svg>
+        </span>
+            </div>
 
-        <div class="my-multiselect__placeholder" v-if="modelValue.length === 0">
-            {{ placeholder }}
-
-
-
-        </div>
-        <div
-            class="my-multiselect__selected"
-            v-for="(option, i) in formatedOptions"
-            :key="i"
-            v-show="option.checked"
-        >
-            {{ option[displayProperty] }}
-            <span
-                class="my-multiselect__remove"
-                @click="
-          preventClose($event);
-          handleOptionClick(i);
-        "
-            >
-        &times;
-      </span>
-        </div>
-        <div
-            class="my-multiselect__options"
-            v-show="focused"
-            @click="preventClose"
-            :style="{ top: optionsTop }"
-        >
-            <div
-                class="my-multiselect__option"
-                :class="{ 'my-multiselect__option--checked': option.checked }"
-                v-for="(option, i) in formatedOptions"
-                :key="i"
-                @click="handleOptionClick(i)"
-            >
-                <div class="my-multiselect__checkbox"></div>
-                <div class="my-multiselect__text">
-                    {{ option[displayProperty] }}
+            <div class="my-multiselect__placeholder" v-if="modelValue.length === 0 || (showCount ? modelValue.length <= 4 : modelValue.length <= 12)">
+                {{ getPlaceholderText(false) }}
+            </div>
+            <div class="my-multiselect__selected" v-for="(option, i) in formatedOptions" :key="i" v-show="option.checked && (showCount || formatedOptions.slice(i).filter(j => j.checked).length <= 4)">
+                {{ option[displayProperty] }}
+                <span class="my-multiselect__remove" @click="preventClose($event); handleOptionClick(i)">&times;</span>
+            </div>
+            <div class="my-multiselect__options" v-show="focused" @click="preventClose" :style="{ top: optionsTop }">
+                <div class="my-multiselect__option" :class="{ 'my-multiselect__option--checked': option.checked }" v-for="(option, i) in formatedOptions" :key="i" @click="handleOptionClick(i)">
+                    <div class="my-multiselect__checkbox"></div>
+                    <div class="my-multiselect__text">
+                        {{ option[displayProperty] }}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     </div>
 </template>
 
@@ -73,48 +35,53 @@ export default {
     data() {
         return {
             focused: false,
-            optionsTop: "34px"
+            optionsTop: "34px",
+            showCount: true,
         };
     },
     props: {
         width: {
             type: String,
-            default: "325px"
+            default: "325px",
         },
         options: {
             type: Array,
-            default: () => []
+            default: () => [],
         },
         modelValue: {
             type: Array,
-            default: () => []
+            default: () => [],
         },
         placeholder: {
-            type: String,
-            default: "Chips"
+            type: [String, Number, Array, Object, null],
+            default: "Chips",
         },
         displayProperty: {
             type: String,
-            default: "name"
+            default: "name",
         },
         valueProperty: {
             type: String,
-            default: "value"
+            default: "value",
         },
         required: {
-            default: false
-        }
+            default: false,
+        },
     },
 
     computed: {
         formatedOptions() {
             return this.options.map((option) => {
-                let checked = this.modelValue.some(
-                    (item) => item === option[this.valueProperty]
-                );
-                return { ...option, checked };
+                let checked = this.modelValue.some((item) => item === option[this.valueProperty]);
+                return {
+                    ...option,
+                    checked
+                };
+            }).filter((option) => {
+                return typeof option.title === "string" && typeof option.shortcut === "string";
             });
-        }
+        },
+
     },
 
     mounted() {
@@ -131,19 +98,49 @@ export default {
             arrow.classList.toggle('rotated');
         },
 
+        getPlaceholderText() {
+            if (this.modelValue.length <= 4) {
+                if (
+                    typeof this.placeholder === 'string' ||
+                    typeof this.placeholder === 'number' ||
+                    Array.isArray(this.placeholder) ||
+                    typeof this.placeholder === 'object' ||
+                    this.placeholder === null
+                ) {
+                    return this.placeholder;
+                } else {
+                    return '';
+                }
+            } else {
+                const remainingCount = this.modelValue.length - 4;
+                if (
+                    typeof this.placeholder === 'string' ||
+                    typeof this.placeholder === 'number' ||
+                    Array.isArray(this.placeholder) ||
+                    typeof this.placeholder === 'object' ||
+                    this.placeholder === null
+                ) {
+                    return `${this.placeholder} +${remainingCount}`;
+                } else {
+                    return `+${remainingCount}`;
+                }
+            }
+        },
+
         handleOptionClick(i) {
             let newValue = [...this.modelValue];
 
+
             if (!this.formatedOptions[i].checked) {
-                newValue.push(this.options[i][this.valueProperty]);
+                if (this.modelValue.length === 0 || !this.required) {
+                    newValue.push(this.options[i][this.valueProperty]);
+                }
             } else {
                 let existIndex = this.modelValue.findIndex(
-                    (v) => v === this.options[i][this.valueProperty]
+                    v => v === this.options[i][this.valueProperty]
                 );
-                console.log(existIndex);
                 newValue.splice(existIndex, 1);
             }
-
             this.$emit("update:modelValue", newValue);
 
             //   this.localOptions[i].checked = !this.localOptions[i].checked;
@@ -160,7 +157,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 body{
     background-color: #f4f5fb;
 }
