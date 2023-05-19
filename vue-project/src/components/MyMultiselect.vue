@@ -36,7 +36,7 @@ export default {
         return {
             focused: false,
             optionsTop: "34px",
-            showCount: true,
+            showCount: false,
         };
     },
     props: {
@@ -71,17 +71,29 @@ export default {
 
     computed: {
         formatedOptions() {
-            return this.options.map((option) => {
-                let checked = this.modelValue.some((item) => item === option[this.valueProperty]);
-                return {
-                    ...option,
-                    checked
-                };
-            }).filter((option) => {
-                return typeof option.title === "string" && typeof option.shortcut === "string";
-            });
-        },
+            const firstOption = this.options[0];
+            if (typeof firstOption === "object") {
+                return this.options.map((option) => {
+                    let checked = this.modelValue.some((item) => item === option[this.valueProperty]);
+                    return {
+                        ...option,
+                        checked
+                    };
+                }).filter((option) => {
+                    return typeof option.title === "string" && typeof option.shortcut === "string";
+                });
+            } else {
 
+                return this.options.map((option) => {
+                    let checked = this.modelValue.includes(option);
+                    return {
+                        title: option,
+                        shortcut: option,
+                        checked
+                    };
+                });
+            }
+        },
     },
 
     mounted() {
