@@ -111,50 +111,61 @@ export default {
         },
 
         getPlaceholderText() {
-            if (this.modelValue.length <= 4) {
-                if (
-                    typeof this.placeholder === 'string' ||
-                    typeof this.placeholder === 'number' ||
-                    Array.isArray(this.placeholder) ||
-                    typeof this.placeholder === 'object' ||
-                    this.placeholder === null
-                ) {
-                    return this.placeholder;
-                } else {
-                    return '';
-                }
-            } else {
-                const remainingCount = this.modelValue.length - 4;
-                if (
-                    typeof this.placeholder === 'string' ||
-                    typeof this.placeholder === 'number' ||
-                    Array.isArray(this.placeholder) ||
-                    typeof this.placeholder === 'object' ||
-                    this.placeholder === null
-                ) {
-                    return `${this.placeholder} +${remainingCount}`;
-                } else {
-                    return `+${remainingCount}`;
-                }
+            let placeholderText = '';
+
+            switch (true) {
+                case this.modelValue.length <= 4:
+                    switch (true) {
+                        case typeof this.placeholder === 'string':
+                        case typeof this.placeholder === 'number':
+                        case Array.isArray(this.placeholder):
+                        case typeof this.placeholder === 'object':
+                        case this.placeholder === null:
+                            placeholderText = this.placeholder;
+                            break;
+                        default:
+                            placeholderText = '';
+                            break;
+                    }
+                    break;
+                default:
+                    const remainingCount = this.modelValue.length - 4;
+                    switch (true) {
+                        case typeof this.placeholder === 'string':
+                        case typeof this.placeholder === 'number':
+                        case Array.isArray(this.placeholder):
+                        case typeof this.placeholder === 'object':
+                        case this.placeholder === null:
+                            placeholderText = `${this.placeholder} +${remainingCount}`;
+                            break;
+                        default:
+                            placeholderText = `+${remainingCount}`;
+                            break;
+                    }
+                    break;
             }
+
+            return placeholderText;
         },
+
 
         handleOptionClick(i) {
             let newValue = [...this.modelValue];
 
-            switch (this.formatedOptions[i].checked) {
-                case false:
-                    if (this.modelValue.length === 0 || !this.required) {
-                        newValue.push(this.options[i]);
-                    }
-                    break;
-                case true:
-                    let existIndex = this.modelValue.findIndex((v) => v === this.options[i]);
-                    newValue.splice(existIndex, 1);
-                    break;
-            }
 
+            if (!this.formatedOptions[i].checked) {
+                if (this.modelValue.length === 0 || !this.required) {
+                    newValue.push(this.options[i]);
+                }
+            } else {
+                let existIndex = this.modelValue.findIndex(
+                    v => v === this.options[i]
+                );
+                newValue.splice(existIndex, 1);
+            }
             this.$emit("update:modelValue", newValue);
+
+            //   this.localOptions[i].checked = !this.localOptions[i].checked;
             console.log(this.$refs.parent);
             setTimeout(this.fixTop, 100);
         },
