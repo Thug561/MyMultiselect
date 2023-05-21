@@ -53,7 +53,7 @@ export default {
             default: () => [],
         },
         placeholder: {
-            type: [String, Number, Array, Object, null],
+            type: String,
             default: "Chips",
         },
         displayProperty: {
@@ -142,20 +142,19 @@ export default {
         handleOptionClick(i) {
             let newValue = [...this.modelValue];
 
-
-            if (!this.formatedOptions[i].checked) {
-                if (this.modelValue.length === 0 || !this.required) {
-                    newValue.push(this.options[i][this.valueProperty]);
-                }
-            } else {
-                let existIndex = this.modelValue.findIndex(
-                    v => v === this.options[i][this.valueProperty]
-                );
-                newValue.splice(existIndex, 1);
+            switch (this.formatedOptions[i].checked) {
+                case false:
+                    if (this.modelValue.length === 0 || !this.required) {
+                        newValue.push(this.options[i]);
+                    }
+                    break;
+                case true:
+                    let existIndex = this.modelValue.findIndex((v) => v === this.options[i]);
+                    newValue.splice(existIndex, 1);
+                    break;
             }
-            this.$emit("update:modelValue", newValue);
 
-            //   this.localOptions[i].checked = !this.localOptions[i].checked;
+            this.$emit("update:modelValue", newValue);
             console.log(this.$refs.parent);
             setTimeout(this.fixTop, 100);
         },
