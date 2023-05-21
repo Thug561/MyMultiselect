@@ -7,7 +7,6 @@
                     display-property="title"
                     value-property="shortcut"
                     v-model="selectedValue"
-                    @imput="handleSelectedValueChange"
                 ></my-multiselect>
             </div>
         </div>
@@ -21,30 +20,18 @@ export default {
     data() {
         return {
             values: [
-                // { title: "bar", shortcut: "value1" },
-                // { title: "some", shortcut: "value2" },
-                // { title: "test", shortcut: "value4" },
-                // { title: "bee", shortcut: "value5" },
-                // { title: "look", shortcut: "value6" }
-                1, 2, 3
-            ],
-            selectedValue: [1, 2, 3],
+                333,
+                {item: "2"},
+                {item: "2", id: "222"},
+                "222",
+                "",
+                [1]
+                ],
+            selectedValue: ["222"],
         };
     },
     components: {
         MyMultiselect,
-    },
-    methods: {
-        handleSelectedValueChange() {
-            this.selectedValue = this.selectedValue.map((value) => {
-                if (typeof value === "number") {
-                    // Перетворюємо примітивне число на об'єкт
-                    const option = this.values.find((opt) => opt.shortcut === value);
-                    return option ? { ...option } : null;
-                }
-                return value;
-            });
-        },
     },
 };
 </script>
