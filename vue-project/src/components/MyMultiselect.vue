@@ -111,43 +111,31 @@ export default {
         },
 
         getPlaceholderText() {
-            let placeholderText = '';
-
-            switch (true) {
-                case this.modelValue.length <= 4:
-                    switch (true) {
-                        case typeof this.placeholder === 'string':
-                        case typeof this.placeholder === 'number':
-                        case Array.isArray(this.placeholder):
-                        case typeof this.placeholder === 'object':
-                        case this.placeholder === null:
-                            placeholderText = this.placeholder;
-                            break;
-                        default:
-                            placeholderText = '';
-                            break;
-                    }
-                    break;
-                default:
-                    const remainingCount = this.modelValue.length - 4;
-                    switch (true) {
-                        case typeof this.placeholder === 'string':
-                        case typeof this.placeholder === 'number':
-                        case Array.isArray(this.placeholder):
-                        case typeof this.placeholder === 'object':
-                        case this.placeholder === null:
-                            placeholderText = `${this.placeholder} +${remainingCount}`;
-                            break;
-                        default:
-                            placeholderText = `+${remainingCount}`;
-                            break;
-                    }
-                    break;
+            if (this.modelValue.length <= 4) {
+                switch (typeof this.placeholder) {
+                    case 'string':
+                    case 'number':
+                    case 'object':
+                        if (Array.isArray(this.placeholder) || this.placeholder === null) {
+                            return this.placeholder;
+                        }
+                    default:
+                        return '';
+                }
+            } else {
+                const remainingCount = this.modelValue.length - 4;
+                switch (typeof this.placeholder) {
+                    case 'string':
+                    case 'number':
+                    case 'object':
+                        if (Array.isArray(this.placeholder) || this.placeholder === null) {
+                            return `${this.placeholder} +${remainingCount}`;
+                        }
+                    default:
+                        return `+${remainingCount}`;
+                }
             }
-
-            return placeholderText;
         },
-
 
         handleOptionClick(i) {
             let newValue = [...this.modelValue];
