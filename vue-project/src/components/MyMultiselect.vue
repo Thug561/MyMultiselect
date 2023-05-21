@@ -15,14 +15,14 @@
                 {{ getPlaceholderText(false) }}
             </div>
             <div class="my-multiselect__selected" v-for="(option, i) in formatedOptions" :key="i" v-show="option.checked && (showCount || formatedOptions.slice(i).filter(j => j.checked).length <= 4)">
-                {{ option[displayProperty] }}
+                {{ option['value'] }}
                 <span class="my-multiselect__remove" @click="preventClose($event); handleOptionClick(i)">&times;</span>
             </div>
             <div class="my-multiselect__options" v-show="focused" @click="preventClose" :style="{ top: optionsTop }">
                 <div class="my-multiselect__option" :class="{ 'my-multiselect__option--checked': option.checked }" v-for="(option, i) in formatedOptions" :key="i" @click="handleOptionClick(i)">
                     <div class="my-multiselect__checkbox"></div>
                     <div class="my-multiselect__text">
-                        {{ option[displayProperty] }}
+                        {{ option['value'] }}
                     </div>
                 </div>
             </div>
@@ -31,6 +31,26 @@
 </template>
 
 <script>
+    function renderItem(item, isRoot = true) {
+        switch (typeof item) {
+            case typeof {}:
+                if (Array.isArray(item)) {
+                    return isRoot ?
+                        item.map(i => renderItem(i, false)).join(', ') :
+                        `[ ${item.map(i => renderItem(i, false)).join(', ')} ]`;
+                }
+            const temp = Object.keys(item).map(i => `${i.toString()}: ${renderItem(item[i], false)}`).join(', ');
+                return isRoot ? temp : `{ ${temp} }`;
+            case typeof "":
+                return isRoot ? item : `"${item}"`;
+            case typeof null:
+                return "null";
+            case typeof 0:
+                return item.toString();
+            default:
+                throw 1;
+        }
+    }
 export default {
     data() {
         return {
@@ -71,29 +91,15 @@ export default {
 
     computed: {
         formatedOptions() {
-            const firstOption = this.options[0];
-            if (typeof firstOption === "object") {
-                return this.options.map((option) => {
-                    let checked = this.modelValue.some((item) => item === option[this.valueProperty]);
-                    return {
-                        ...option,
-                        checked
-                    };
-                }).filter((option) => {
-                    return typeof option.title === "string" && typeof option.shortcut === "string";
-                });
-            } else {
-
-                return this.options.map((option) => {
-                    let checked = this.modelValue.includes(option);
-                    return {
-                        title: option,
-                        shortcut: option,
-                        checked
-                    };
-                });
-            }
-        },
+            const _options = this.options.map(i => renderItem(i));
+            return _options.map(option => {
+                let checked = this.modelValue.some(item => renderItem(item) === option);
+                return {
+                    value: option,
+                    checked
+                };
+            });
+        }
     },
 
     mounted() {
